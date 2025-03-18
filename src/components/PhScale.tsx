@@ -9,11 +9,7 @@ type PhScaleProps = {
 export function PhScale({ value, onChange, disabled = false }: PhScaleProps) {
   return (
     <div className="w-full space-y-3">
-      <div className="flex justify-between text-sm font-medium">
-        <span className="text-red-600">Acidic</span>
-        <span className="text-gray-600">Neutral</span>
-        <span className="text-blue-600">Basic</span>
-      </div>
+      
       
       <input
         type="range"
@@ -44,10 +40,6 @@ export function PhScale({ value, onChange, disabled = false }: PhScaleProps) {
         <span>14</span>
       </div>
       
-      <div className="text-center">
-        <p className="text-2xl font-bold">{value.toFixed(1)}</p>
-        <p className="text-sm text-gray-500">pH Level</p>
-      </div>
     </div>
   )
 }

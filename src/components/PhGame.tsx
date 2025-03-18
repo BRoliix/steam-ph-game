@@ -3,9 +3,10 @@
 import { useEffect, useState } from 'react'
 import { PhScale } from './PhScale'
 import { ResultDisplay } from './ResultDisplay'
-import { ScenicElement } from './ScenicElements'
+import { ScenicElement, ScenicElements } from './ScenicElements'
 import { WaterBox } from './WaterBox'
-import { calculateNewPh } from '../ utils/phUtils' 
+import { calculateNewPh, getAcidityStatus } from '../ utils/phUtils'
+import { EducationalScreen } from './EducationalScreen'
 
 export function PhGame() {
   const [elements, setElements] = useState<ScenicElement[]>([])
@@ -14,14 +15,15 @@ export function PhGame() {
   const [gameStatus, setGameStatus] = useState<'playing' | 'correct' | 'incorrect'>('playing')
   const [attempts, setAttempts] = useState<number>(0)
   const [score, setScore] = useState<number>(0)
+  const [showEducation, setShowEducation] = useState(false)
 
   // Generate random pH on component mount and after each round
   useEffect(() => {
-    if (gameStatus === 'playing') {
+    if (gameStatus === 'playing' && !showEducation) {
       const randomPh = parseFloat((Math.random() * 14).toFixed(1))
       setActualPh(randomPh)
     }
-  }, [attempts, gameStatus])
+  }, [attempts, gameStatus, showEducation])
 
   // Handle element addition
   const handleAddElement = (element: ScenicElement) => {
@@ -30,7 +32,7 @@ export function PhGame() {
     setActualPh(newPh)
   }
   
-  // Add missing handlePhChange function
+  // Handle pH change from slider
   const handlePhChange = (value: number) => {
     setSelectedPh(value)
   }
@@ -44,17 +46,33 @@ export function PhGame() {
       setScore(prev => prev + 1)
     }
     
-    // Reset after 2 seconds
+    // Show educational content after a brief delay
     setTimeout(() => {
-      setGameStatus('playing')
-      setAttempts(prev => prev + 1)
+      setShowEducation(true)
     }, 2000)
+  }
+
+  const handleContinueFromEducation = () => {
+    setShowEducation(false)
+    setGameStatus('playing')
+    setAttempts(prev => prev + 1)
   }
 
   const handleRestart = () => {
     setScore(0)
     setAttempts(0)
     setGameStatus('playing')
+    setElements([])
+  }
+
+  if (showEducation) {
+    return (
+      <EducationalScreen
+        actualPh={actualPh}
+        userGuess={selectedPh}
+        onContinue={handleContinueFromEducation}
+      />
+    )
   }
 
   return (
@@ -68,11 +86,32 @@ export function PhGame() {
         
         <WaterBox ph={actualPh} gameStatus={gameStatus} />
         
-        <PhScale 
-          value={selectedPh} 
-          onChange={handlePhChange} 
-          disabled={gameStatus !== 'playing'} 
-        />
+        {/* Optional interactive elements that affect pH */}
+        {gameStatus === 'playing' && (
+          <div className="w-full">
+            <h3 className="text-sm font-medium text-gray-700 mb-2">Add elements to water:</h3>
+            <ScenicElements onAdd={handleAddElement} />
+          </div>
+        )}
+        
+        <div className="w-full space-y-1">
+          <div className="flex justify-between text-sm font-medium">
+            <span className="text-red-600">Acidic</span>
+            <span className="text-gray-600">Neutral</span>
+            <span className="text-blue-600">Basic</span>
+          </div>
+          
+          <PhScale 
+            value={selectedPh} 
+            onChange={handlePhChange} 
+            disabled={gameStatus !== 'playing'} 
+          />
+          
+          <div className="text-center">
+            <p className="text-3xl font-bold">{selectedPh.toFixed(1)}</p>
+            <p className="text-sm text-gray-500">pH Level</p>
+          </div>
+        </div>
         
         <div className="w-full">
           <button
@@ -88,11 +127,13 @@ export function PhGame() {
           </button>
         </div>
         
-        <ResultDisplay 
-          gameStatus={gameStatus} 
-          selectedPh={selectedPh} 
-          actualPh={actualPh} 
-        />
+        {gameStatus !== 'playing' && (
+          <ResultDisplay 
+            gameStatus={gameStatus} 
+            selectedPh={selectedPh} 
+            actualPh={actualPh} 
+          />
+        )}
         
         {attempts > 0 && (
           <button
