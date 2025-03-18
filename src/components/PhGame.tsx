@@ -1,12 +1,14 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { WaterBox } from './WaterBox'
+import { useEffect, useState } from 'react'
 import { PhScale } from './PhScale'
 import { ResultDisplay } from './ResultDisplay'
-import { getPhColor, getAcidityStatus } from '../ utils/phUtils'
+import { ScenicElement } from './ScenicElements'
+import { WaterBox } from './WaterBox'
+import { calculateNewPh } from '../ utils/phUtils' 
 
 export function PhGame() {
+  const [elements, setElements] = useState<ScenicElement[]>([])
   const [selectedPh, setSelectedPh] = useState<number>(7)
   const [actualPh, setActualPh] = useState<number>(7)
   const [gameStatus, setGameStatus] = useState<'playing' | 'correct' | 'incorrect'>('playing')
@@ -21,6 +23,14 @@ export function PhGame() {
     }
   }, [attempts, gameStatus])
 
+  // Handle element addition
+  const handleAddElement = (element: ScenicElement) => {
+    setElements(prev => [...prev, element])
+    const newPh = calculateNewPh(actualPh, element)
+    setActualPh(newPh)
+  }
+  
+  // Add missing handlePhChange function
   const handlePhChange = (value: number) => {
     setSelectedPh(value)
   }
