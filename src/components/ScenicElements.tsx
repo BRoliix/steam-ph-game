@@ -1,33 +1,79 @@
-// components/ScenicElements.tsx
-import { useState } from 'react'
+'use client'
+
+import { motion } from 'framer-motion'
 
 export type ScenicElement = {
   id: string
-  type: 'limestone' | 'algae' | 'pollution' | 'plant' | 'oil'
-  position: { x: number; y: number }
+  type: 'co2' | 'warming' | 'acidRain' | 'algalBloom' | 'meltwater'
+  name: string
   effect: number
+  description: string
 }
+
+const elements: ScenicElement[] = [
+  {
+    id: 'co2',
+    type: 'co2',
+    name: 'CO₂ Absorption',
+    effect: -0.7,
+    description: 'Atmospheric CO₂ dissolves in water forming carbonic acid'
+  },
+  {
+    id: 'warming',
+    type: 'warming',
+    name: 'Water Warming',
+    effect: -0.3,
+    description: 'Warmer water holds less dissolved oxygen and increases acidity'
+  },
+  {
+    id: 'acidRain',
+    type: 'acidRain',
+    name: 'Acid Rain',
+    effect: -0.8,
+    description: 'Precipitation containing elevated levels of sulfuric and nitric acids'
+  },
+  {
+    id: 'meltwater',
+    type: 'meltwater',
+    name: 'Glacier Meltwater',
+    effect: -0.4,
+    description: 'Melting ice releases ancient trapped CO₂ and exposes new rock surfaces'
+  },
+  {
+    id: 'algalBloom',
+    type: 'algalBloom',
+    name: 'Algal Bloom',
+    effect: 0.5,
+    description: 'Rapid growth of algae can temporarily increase pH during photosynthesis'
+  }
+]
 
 export function ScenicElements({ onAdd }: { onAdd: (element: ScenicElement) => void }) {
   return (
-    <div className="flex gap-4 mb-8">
-      <button
-        onClick={() => onAdd({ 
-          id: '1', 
-          type: 'limestone', 
-          position: { x: 0, y: 0 }, 
-          effect: 0.5 
-        })}
-        className="p-2 rounded bg-gray-200 hover:bg-gray-300"
-      >
-        <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s1.9-2.659 3.065-2.659c1.23 0 2.211.636 2.665 1.59L19 6.91V3a1 1 0 00-1.106-1.106H5a1 1 0 00-1.106 1.106v3.91L8 6h3.06c.4.306.92.659 1.4.659A1.4 1.4 0 0012 6z" />
-        </svg>
-        <span className="ml-2">Limestone</span>
-      </button>
-
-      {/* Add other elements with SVG icons */}
-      {/* ... */}
+    <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mb-4 text-black">
+      {elements.map((element) => (
+        <motion.button
+          key={element.id}
+          onClick={() => onAdd(element)}
+          className="p-2 rounded bg-gray-200 hover:bg-gray-300 flex flex-col items-center"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          <motion.svg 
+            className="w-6 h-6 text-gray-600" 
+            viewBox="0 0 24 24" 
+            fill="none" 
+            stroke="currentColor"
+            initial={{ rotate: 0 }}
+            animate={{ rotate: 360 }}
+            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+          >
+            {/* Add appropriate SVG paths for each element type */}
+          </motion.svg>
+          <span className="text-xs mt-1">{element.name}</span>
+          <span className="text-xs text-red-600">{element.effect > 0 ? '+' : ''}{element.effect.toFixed(1)} pH</span>
+        </motion.button>
+      ))}
     </div>
   )
 }

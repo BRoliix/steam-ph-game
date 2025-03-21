@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { PhScale } from './PhScale'
 import { ResultDisplay } from './ResultDisplay'
 import { ScenicElement, ScenicElements } from './ScenicElements'
@@ -12,50 +13,49 @@ export function PhGame() {
   const [elements, setElements] = useState<ScenicElement[]>([])
   const [selectedPh, setSelectedPh] = useState<number>(7)
   const [actualPh, setActualPh] = useState<number>(7)
+  const [initialPh, setInitialPh] = useState<number>(7)
   const [gameStatus, setGameStatus] = useState<'playing' | 'correct' | 'incorrect'>('playing')
   const [attempts, setAttempts] = useState<number>(0)
   const [score, setScore] = useState<number>(0)
   const [showEducation, setShowEducation] = useState(false)
+  const [lastAddedElement, setLastAddedElement] = useState<ScenicElement | null>(null)
+  const [showPhChange, setShowPhChange] = useState(false)
 
-  // Generate random pH on component mount and after each round
   useEffect(() => {
     if (gameStatus === 'playing' && !showEducation) {
-      const randomPh = parseFloat((Math.random() * 14).toFixed(1))
+      const randomPh = parseFloat((Math.random() * 8 + 4).toFixed(1))
       setActualPh(randomPh)
+      setInitialPh(randomPh)
+      setElements([])
+      setLastAddedElement(null)
     }
   }, [attempts, gameStatus, showEducation])
 
-  // Handle element addition
   const handleAddElement = (element: ScenicElement) => {
     setElements(prev => [...prev, element])
-    const newPh = calculateNewPh(actualPh, element)
+    const newPh = Math.max(0, Math.min(14, actualPh + element.effect))
     setActualPh(newPh)
+    setLastAddedElement(element)
   }
   
-  // Handle pH change from slider
   const handlePhChange = (value: number) => {
     setSelectedPh(value)
   }
 
   const handleSubmit = () => {
-    // Consider answers within +/- 0.5 to be correct
     const isCorrect = Math.abs(selectedPh - actualPh) <= 0.5
-    
     setGameStatus(isCorrect ? 'correct' : 'incorrect')
     if (isCorrect) {
       setScore(prev => prev + 1)
     }
-    
-    // Show educational content after a brief delay
-    setTimeout(() => {
-      setShowEducation(true)
-    }, 2000)
+    setShowPhChange(true)
   }
 
   const handleContinueFromEducation = () => {
     setShowEducation(false)
     setGameStatus('playing')
     setAttempts(prev => prev + 1)
+    setShowPhChange(false)
   }
 
   const handleRestart = () => {
@@ -63,11 +63,13 @@ export function PhGame() {
     setAttempts(0)
     setGameStatus('playing')
     setElements([])
+    setShowPhChange(false)
   }
 
   if (showEducation) {
     return (
       <EducationalScreen
+        initialPh={initialPh}
         actualPh={actualPh}
         userGuess={selectedPh}
         onContinue={handleContinueFromEducation}
@@ -76,22 +78,36 @@ export function PhGame() {
   }
 
   return (
-    <div className="w-full max-w-md mx-auto bg-white p-6 rounded-xl shadow-lg">
+    <motion.div 
+      className="w-full max-w-md mx-auto bg-white p-6 rounded-xl shadow-lg"
+      initial={{ opacity: 0, y: 50 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+    >
       <div className="flex flex-col items-center gap-6">
-        <div className="text-center">
-          <p className="text-lg">
+        <motion.div 
+          className="text-center"
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ delay: 0.2, type: 'spring' }}
+        >
+          <p className="text-lg text-black">
             Score: <span className="font-bold">{score}</span> / {attempts}
           </p>
-        </div>
+        </motion.div>
         
         <WaterBox ph={actualPh} gameStatus={gameStatus} />
         
-        {/* Optional interactive elements that affect pH */}
         {gameStatus === 'playing' && (
-          <div className="w-full">
-            <h3 className="text-sm font-medium text-gray-700 mb-2">Add elements to water:</h3>
+          <motion.div 
+            className="w-full"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4 }}
+          >
+            <h3 className="text-sm font-medium text-gray-700 mb-2">Add climate factors:</h3>
             <ScenicElements onAdd={handleAddElement} />
-          </div>
+          </motion.div>
         )}
         
         <div className="w-full space-y-1">
@@ -107,13 +123,22 @@ export function PhGame() {
             disabled={gameStatus !== 'playing'} 
           />
           
-          <div className="text-center">
+          <motion.div 
+            className="text-center"
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.6 }}
+          >
             <p className="text-3xl font-bold">{selectedPh.toFixed(1)}</p>
-            <p className="text-sm text-gray-500">pH Level</p>
-          </div>
+            <p className="text-sm text-gray-500">Your pH Guess</p>
+          </motion.div>
         </div>
         
-        <div className="w-full">
+        <motion.div 
+          className="w-full"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
           <button
             onClick={handleSubmit}
             disabled={gameStatus !== 'playing'}
@@ -125,9 +150,30 @@ export function PhGame() {
           >
             Check Answer
           </button>
-        </div>
+        </motion.div>
         
-        {gameStatus !== 'playing' && (
+        <AnimatePresence>
+          {showPhChange && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.5 }}
+              className="text-center text-black p-4 bg-blue-100 rounded-lg"
+            >
+              <p>Initial pH: {initialPh.toFixed(1)}</p>
+              <p>Final pH: {actualPh.toFixed(1)}</p>
+              <button
+                onClick={() => setShowEducation(true)}
+                className="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+              >
+                Learn More
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+        
+        {gameStatus !== 'playing' && !showPhChange && (
           <ResultDisplay 
             gameStatus={gameStatus} 
             selectedPh={selectedPh} 
@@ -136,14 +182,16 @@ export function PhGame() {
         )}
         
         {attempts > 0 && (
-          <button
+          <motion.button
             onClick={handleRestart}
             className="text-blue-600 hover:underline"
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
           >
             Restart Game
-          </button>
+          </motion.button>
         )}
       </div>
-    </div>
+    </motion.div>
   )
 }
