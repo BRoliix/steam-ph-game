@@ -37,7 +37,7 @@ export function EducationalScreen({ initialPh, actualPh, userGuess, onContinue }
           "Protecting and restoring carbon sinks",
           "International climate agreements to limit emissions"
         ],
-        image: "/images/acidic-water-impact.jpg"
+        image: "/assets/image.png"
       }
     } else if (ph < 7) {
       return {
@@ -60,7 +60,7 @@ export function EducationalScreen({ initialPh, actualPh, userGuess, onContinue }
           "Sustainable aquaculture practices",
           "Climate-resilient coastal management"
         ],
-        image: "/images/moderately-acidic-impact.jpg"
+        image: "/assets/image.png"
       }
     } else if (ph === 7) {
       return {
@@ -83,7 +83,7 @@ export function EducationalScreen({ initialPh, actualPh, userGuess, onContinue }
           "Sustainable land management",
           "Climate adaptation planning"
         ],
-        image: "/images/neutral-water-ecosystem.jpg"
+        image: "/assets/image.png"
       }
     } else {
       return {
@@ -106,7 +106,7 @@ export function EducationalScreen({ initialPh, actualPh, userGuess, onContinue }
           "Monitoring and early warning systems",
           "Reducing nutrient pollution"
         ],
-        image: "/images/basic-water-impact.jpg"
+        image: "/assets/image.png"
       }
     }
   }
@@ -152,9 +152,9 @@ export function EducationalScreen({ initialPh, actualPh, userGuess, onContinue }
         {currentSlide === 0 && (
           <div className="grid md:grid-cols-2 gap-6">
             <div>
-              <h4 className="font-bold text-black mb-3">{environmentalInfo.title}</h4>
+              <h4 className="font-bold text-black mb-3">{environmentalInfo?.title ?? 'Environmental Information'}</h4>
               <ul className="space-y-2 text-black">
-                {environmentalInfo.facts.map((fact, index) => (
+                {environmentalInfo?.facts?.map((fact, index) => (
                   <li key={index} className="flex items-start">
                     <span className="inline-flex items-center justify-center w-6 h-6 mr-2 bg-blue-100 text-blue-800 rounded-full flex-shrink-0">
                       {index + 1}
@@ -164,16 +164,17 @@ export function EducationalScreen({ initialPh, actualPh, userGuess, onContinue }
                 ))}
               </ul>
             </div>
-            <div className="bg-gray-100 rounded-lg p-4 flex flex-col items-center justify-center">
-              <div className="relative w-full h-48 md:h-64 mb-3 rounded-lg overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center">
-                  <span className="text-white text-lg font-medium">Climate Impact on Water</span>
-                </div>
-              </div>
-              <p className="text-sm text-gray-600 italic">
-                Climate change is altering water pH levels worldwide, affecting aquatic ecosystems and biodiversity.
-              </p>
-            </div>
+           
+            <div className="relative w-full h-48 md:h-64 rounded-lg overflow-hidden">
+            <Image
+              src={environmentalInfo?.image ?? '/images/default-water.jpg'}
+              alt={environmentalInfo?.title ?? 'Water Image'}
+              layout="fill"
+              objectFit="cover"
+            />
+          </div>
+        
+
           </div>
         )}
         
@@ -187,7 +188,7 @@ export function EducationalScreen({ initialPh, actualPh, userGuess, onContinue }
             <div className="bg-orange-50 border-l-4 border-orange-500 p-4 rounded">
               <h4 className="font-bold text-orange-800 mb-2">Climate Factors Affecting Water pH</h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-black">
-                {environmentalInfo.climateCauses.map((cause, index) => (
+                {environmentalInfo?.climateCauses?.map((cause, index) => (
                   <div key={index} className="flex items-center bg-white p-3 rounded shadow-sm">
                     <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0 mr-3">
                       <svg className="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -217,7 +218,7 @@ export function EducationalScreen({ initialPh, actualPh, userGuess, onContinue }
             </p>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {environmentalInfo.solutions.map((solution, index) => (
+              {environmentalInfo?.solutions?.map((solution, index) => (
                 <div key={index} className="bg-green-50 p-4 rounded-lg flex">
                   <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0 mr-3">
                     <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
